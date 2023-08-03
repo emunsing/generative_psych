@@ -1,0 +1,4 @@
+python==3.11.0
+jupyter
+openai
+langchain==0.0.195
