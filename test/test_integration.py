@@ -1,16 +1,30 @@
 from typing import Any
 from collections import OrderedDict
 from generative_psych import ConversationAgent, RelationshipConversationContext
+from psych_helpers import OpenAIQueryAPI
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel("DEBUG")
 
+ALICE = dict(name='Alice',
+             background="Alice is a startup founder in her mid-twenties",
+             relationship_goals="Find someone who challenges them",
+             other_major_goals="Grow their business, have fun",
+             personal_context="just got off work and is looking forward to the evening",
+            )
+
+BOB = dict(name='Bob',
+           background="Bob is a nervous recent college graduate",
+           relationship_goals="Find a partner",
+           other_major_goals="Express themselves creatively, find friendships, develop roots",
+           personal_context="just got off work and is looking forward to the evening",
+           )
 
 class conditional_reflection_api:
     def __call__(self, *args: Any, **kwds: Any) -> Any:
-            possible_responses = [('You are writing a dialogue between Bob and Alice', ["Bob: Hi Alice!", 'Alice: Hi Bob, how are you?']),
+            possible_responses = [('You are writing a dialogue between', ["Bob: Hi Alice!", 'Alice: Hi Bob, how are you?']),
                                   ('Output a line beginning with "Relationship goals:"', ["Relationship goals: get married"]),
                                   ('Output a line beginning with "Other goals:"', ["Other goals: care for their parents"]),
                                   ('First, print "Feelings:" with a few words', ['Feelings: angry and resentful for being lied to']),
@@ -45,24 +59,19 @@ class RelationshipConversationContextTest(RelationshipConversationContext):
                             ("both want to break up", 0.0),
                             ])
 
-
 def test_integration():
     query_api = conditional_reflection_api()
-    p1 = ConversationAgent(query_api=query_api,
-                             name='Bob',
-                             background="Bob is a nervous recent college graduate",
-                             relationship_goals="Find a partner",
-                             other_major_goals="Express themselves creatively, find friendships, develop roots",
-                             personal_context="just got off work and is looking forward to the evening",
-                             )
+    p1 = ConversationAgent(query_api=query_api, **ALICE)
+    p2 = ConversationAgent(query_api=query_api, **BOB)
     
-    p2 = ConversationAgent(query_api=query_api,
-                             name='Alice',
-                             background="Alice is a startup founder in her mid-twenties",
-                             relationship_goals="Find someone who challenges them",
-                             other_major_goals="Grow their business, have fun",
-                             personal_context="just got off work and is looking forward to the evening",
-                             )
+    runner = RelationshipConversationContextTest(query_api, p1, p2)
+
+    runner.run_relationship()
+
+def test_integration_openai():
+    query_api = OpenAIQueryAPI(temperature=0.0)
+    p1 = ConversationAgent(query_api=query_api, **ALICE)
+    p2 = ConversationAgent(query_api=query_api, **BOB)
     
     runner = RelationshipConversationContextTest(query_api, p1, p2)
 

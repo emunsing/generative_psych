@@ -6,6 +6,7 @@ from langchain.schema import (
     SystemMessage
 )
 import tiktoken
+import textwrap
 from langchain.callbacks import get_openai_callback
 
 import logging
@@ -17,10 +18,14 @@ class OpenAIQueryAPI:
         self.llm = ChatOpenAI(model_name=modeltype, temperature=temperature)
         
     def __call__(self, prompt):
-        prompt = prompt.replace("    ", "").replace("\t", "")
+        system_prompt = textwrap.dedent("""\
+            You are an excellent writer developing a screenplay based on the following prompt. The dialogue should be realistic, 
+            descriptive, nuanced, and should feel true to real life. Writing a realistic depiction is important, even if it means that 
+            characters get mad at each other, show strong emotions, and get upset.
+            """).replace("\n", " ")
+
         messages = [
-            SystemMessage(content="""You are an excellent writer developing a screenplay based on the following prompt. 
-Writing a realistic dialogue is important, event if it means that characters get mad at each other, show strong emotions, and get upset."""),
+            SystemMessage(content=system_prompt),
             HumanMessage(content=prompt)
     ]
         LOGGER.debug(f"Query: {prompt}")

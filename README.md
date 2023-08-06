@@ -71,3 +71,10 @@ Individual realms:
 
 Work flow:
 - Initialize conversation
+
+Data model:
+- Delineate narratives
+- Delineate conversations
+- Allow for appending to conversations
+- Keep track of most recent conversation and narrative
+- 
