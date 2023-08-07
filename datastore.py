@@ -52,6 +52,19 @@ class NarrativeStore(abc.ABC):
     def count_unread_conversations(self):
         pass
 
+class DummyNarrativeStore(NarrativeStore):
+    def create_conversation_record(self, narrative_uid):
+        pass
+    def append_conversation_record(self):
+        pass
+    def get_conversation_record(self, narrative_index, conversation_index):
+        pass
+    def get_next_conversation_index(self, current_narrative_index, current_conversation_index):
+        pass
+    def save_reader_position(self, narrative_index, conversation_index):
+        pass
+    def count_unread_conversations(self):
+        pass
 
 class FileNarrativeStore(NarrativeStore):
     """

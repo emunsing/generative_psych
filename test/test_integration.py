@@ -1,7 +1,9 @@
 from typing import Any
 from collections import OrderedDict
 from generative_psych import ConversationAgent, RelationshipConversationContext
+from datastore import DummyNarrativeStore, FileNarrativeStore
 from psych_helpers import OpenAIQueryAPI
+import tempfile
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
@@ -30,7 +32,7 @@ class conditional_reflection_api:
                                   ('First, print "Feelings:" with a few words', ['Feelings: angry and resentful for being lied to']),
                                   ('First, output "Emotions:"', ['Emotions: angry, resentful']),
                                   ('Then on a new line output "Needs:"', ['Needs: trust, support']),
-                                  ('both want to break up', ['END OF NARRATIVE']),
+                                  ('both want to break up', ['END NARRATIVE']),
                                   ]
             response_lines = []
             query = args[0]
@@ -47,8 +49,8 @@ class conditional_reflection_api:
             return response
 
 class RelationshipConversationContextTest(RelationshipConversationContext):
-    def __init__(self, query_api, person1, person2) -> None:
-        super().__init__(query_api, person1, person2)
+    def __init__(self, query_api, narrative_store, person1, person2) -> None:
+        super().__init__(query_api, narrative_store, person1, person2)
         self.reflection_interval = 2
         self.max_rounds_in_conversation = 3
 
@@ -64,15 +66,20 @@ def test_integration():
     p1 = ConversationAgent(query_api=query_api, **ALICE)
     p2 = ConversationAgent(query_api=query_api, **BOB)
     
-    runner = RelationshipConversationContextTest(query_api, p1, p2)
+    with tempfile.TemporaryDirectory() as tempdir:
+        store = FileNarrativeStore(data_dir=tempdir)
+        runner = RelationshipConversationContextTest(query_api, store, p1, p2)
 
-    runner.run_relationship()
+        runner.run_relationship()
+        print("Done running test conversation")
 
 def test_integration_openai():
     query_api = OpenAIQueryAPI(temperature=0.0)
     p1 = ConversationAgent(query_api=query_api, **ALICE)
     p2 = ConversationAgent(query_api=query_api, **BOB)
     
-    runner = RelationshipConversationContextTest(query_api, p1, p2)
-
-    runner.run_relationship()
+    with tempfile.TemporaryDirectory() as tempdir:
+        store = FileNarrativeStore(data_dir=tempdir)
+        runner = RelationshipConversationContextTest(query_api, store, p1, p2)
+        runner.run_relationship()
+        print("Done running test conversation")

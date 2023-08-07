@@ -147,8 +147,9 @@ class RelationshipConversationContext():
     Relationship context manager, forcing new events into the course of a relationship.
     """
 
-    def __init__(self, query_api, person1, person2) -> None:
+    def __init__(self, query_api, narrative_store, person1, person2) -> None:
         self.query_api = query_api
+        self.narrative_store = narrative_store
         self.person1 = person1
         self.person2 = person2
         self.snippet_overlap = 4
@@ -177,13 +178,6 @@ class RelationshipConversationContext():
                             ("have moved in together and feel stable", 0.6),
                             ("ending the relationship", 0.0),
                             ])
-
-
-
-
-    def write_conversation(self):
-        pass
-
 
     def update_conversation_context(self):
         # This model of conversation progression progresses numerically through a set of chapter descriptions, based on a survival rate.
@@ -237,7 +231,7 @@ class RelationshipConversationContext():
         # Remove break snippets from converation
         # truncate snippets
         # 
-
+        self.narrative_store.create_conversation_record(self.narrative_uid)
         self.continue_conversation = True
         snippets_since_last_reflection = []
         conversation_snippets = self.start_conversation()
@@ -265,6 +259,7 @@ class RelationshipConversationContext():
             self.rounds_in_conversation += 1
             self.check_conversation_ended(conversation_snippets)
 
+        self.narrative_store.append_conversation_record(conversation_snippets)
         self.check_narrative_ended(conversation_snippets)
         if self.continue_relationship:
             self.person1.reflect_on_conversation(conversation_snippets)
